@@ -2,32 +2,29 @@ use uuid::Uuid;
 use anyhow::{Result, anyhow};
 
 #[derive(Debug)]
-pub struct Packet {
+pub struct Packet<'a> {
     connection_id: Uuid,
     topic: u8,
-    data: Vec<u8>,
+    data: &'a [u8],
 }
 
-impl Packet {
-    pub fn parse(connection_id: Uuid, buf: Vec<u8>) -> Result<Packet> {
-        let mut buf = buf;
-
+impl Packet<'_> {
+    pub fn parse<'a>(connection_id: Uuid, buf: &'a [u8]) -> Result<Packet<'a>> {
         if connection_id.is_nil() {
             return Err(anyhow!("connection id cannot be nil"));
         }
 
         let topic = match buf.get(0) {
-            Some(&topic) => {
-                buf.remove(0);
-                topic
-            },
+            Some(&topic) => topic,
             None => return Err(anyhow!("failed to parse topic")),
         };
+
+        let data = &buf[1..];
 
         Ok(Packet {
             connection_id,
             topic,
-            data: buf,
+            data,
         })
     }
 
@@ -43,24 +40,41 @@ mod tests {
     #[test]
     fn nil_connection_id() {
         let expected = "connection id cannot be nil";
-        let actual = Packet::parse(Uuid::nil(), vec![]).unwrap_err().to_string();
+        let buf = vec![];
+        let actual = Packet::parse(Uuid::nil(), &buf).unwrap_err().to_string();
         assert_eq!(expected, actual);
     }
 
     #[test]
     fn unparsed_topic() {
         let expected = "failed to parse topic";
-        let actual = Packet::parse(Uuid::new_v4(), vec![]).unwrap_err().to_string();
+        let buf = vec![];
+        let actual = Packet::parse(Uuid::new_v4(), &buf).unwrap_err().to_string();
         assert_eq!(expected, actual);
     }
 
     #[test]
-    fn success() {
+    fn success_with_data() {
         let expected_uuid = Uuid::new_v4();
         let expected_topic = 42;
         let expected_data = vec![1,2,3];
+        let buf = vec![42,1,2,3];
 
-        let packet = Packet::parse(expected_uuid, vec![42,1,2,3]).expect("failed to parse packet");
+        let packet = Packet::parse(expected_uuid, &buf).expect("failed to parse packet");
+
+        assert_eq!(expected_uuid, packet.connection_id);
+        assert_eq!(expected_topic, packet.topic);
+        assert_eq!(expected_data, packet.data);
+    }
+
+    #[test]
+    fn success_without_data() {
+        let expected_uuid = Uuid::new_v4();
+        let expected_topic = 42;
+        let expected_data: Vec<u8> = vec![];
+        let buf = vec![42];
+
+        let packet = Packet::parse(expected_uuid, &buf).expect("failed to parse packet");
 
         assert_eq!(expected_uuid, packet.connection_id);
         assert_eq!(expected_topic, packet.topic);
