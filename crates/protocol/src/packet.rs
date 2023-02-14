@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Result};
 use uuid::Uuid;
 
+#[derive(Debug)]
 pub struct Packet<'a> {
     connection_id: Uuid,
     topic: u8,
