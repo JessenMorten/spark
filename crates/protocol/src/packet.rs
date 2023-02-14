@@ -1,7 +1,6 @@
+use anyhow::{anyhow, Result};
 use uuid::Uuid;
-use anyhow::{Result, anyhow};
 
-#[derive(Debug)]
 pub struct Packet<'a> {
     connection_id: Uuid,
     topic: u8,
@@ -57,8 +56,8 @@ mod tests {
     fn success_with_data() {
         let expected_uuid = Uuid::new_v4();
         let expected_topic = 42;
-        let expected_data = vec![1,2,3];
-        let buf = vec![42,1,2,3];
+        let expected_data = vec![1, 2, 3];
+        let buf = vec![42, 1, 2, 3];
 
         let packet = Packet::parse(expected_uuid, &buf).expect("failed to parse packet");
 
