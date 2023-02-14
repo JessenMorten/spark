@@ -14,7 +14,7 @@ impl Packet<'_> {
             return Err(anyhow!("connection id cannot be nil"));
         }
 
-        let topic = match buf.get(0) {
+        let topic = match buf.first() {
             Some(&topic) => topic,
             None => return Err(anyhow!("failed to parse topic")),
         };
