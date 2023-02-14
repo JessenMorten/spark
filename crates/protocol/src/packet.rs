@@ -9,7 +9,7 @@ pub struct Packet<'a> {
 }
 
 impl Packet<'_> {
-    pub fn parse<'a>(connection_id: Uuid, buf: &'a [u8]) -> Result<Packet<'a>> {
+    pub fn parse(connection_id: Uuid, buf: &[u8]) -> Result<Packet<'_>> {
         if connection_id.is_nil() {
             return Err(anyhow!("connection id cannot be nil"));
         }
