@@ -41,7 +41,11 @@ mod tests {
     fn nil_connection_id() {
         let expected = "connection id cannot be nil";
         let buf = vec![];
-        let actual = Packet::parse(Uuid::nil(), &buf).unwrap_err().to_string();
+
+        let actual = Packet::parse(Uuid::nil(), &buf)
+            .expect_err("expected err")
+            .to_string();
+
         assert_eq!(expected, actual);
     }
 
@@ -49,7 +53,11 @@ mod tests {
     fn unparsed_topic() {
         let expected = "failed to parse topic";
         let buf = vec![];
-        let actual = Packet::parse(Uuid::new_v4(), &buf).unwrap_err().to_string();
+
+        let actual = Packet::parse(Uuid::new_v4(), &buf)
+            .expect_err("expected err")
+            .to_string();
+
         assert_eq!(expected, actual);
     }
 
