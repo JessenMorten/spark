@@ -5,6 +5,7 @@ use std::{
 
 use amiquip::{Connection, Exchange, Publish};
 use anyhow::Result;
+use log::{error, warn};
 
 #[derive(Clone)]
 pub struct AmqpClient {
@@ -25,14 +26,26 @@ pub fn connect(url: &str) -> Result<AmqpClient> {
     thread::spawn(move || {
         let exchange = Exchange::direct(&channel);
 
-        while let Ok(msg) = rx.recv() {
-            if let Err(err) = exchange.publish(Publish::new(&msg.1, &msg.0)) {
-                println!("failed to publish message: {}", err);
-                break;
+        loop {
+            match rx.recv() {
+                Ok(msg) => {
+                    let msg = Publish::new(&msg.1, &msg.0);
+                    if let Err(err) = exchange.publish(msg) {
+                        error!("failed to publish: {}", err);
+                        break;
+                    }
+                },
+                Err(err) => {
+                    error!("failed to receive from rx: {}", err);
+                    break;
+                },
             }
         }
 
-        connection.close().expect("failed to close connection");
+        match connection.close() {
+            Ok(_) => warn!("closed amqp connection"),
+            Err(_) => error!("failed to close amqp connection"),
+        }
     });
 
     Ok(AmqpClient { tx })
