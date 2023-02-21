@@ -34,11 +34,11 @@ pub fn connect(url: &str) -> Result<AmqpClient> {
                         error!("failed to publish: {}", err);
                         break;
                     }
-                },
+                }
                 Err(err) => {
                     error!("failed to receive from rx: {}", err);
                     break;
-                },
+                }
             }
         }
 

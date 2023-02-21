@@ -1,5 +1,5 @@
 use anyhow::Result;
-use log::{info, debug, error};
+use log::{debug, error, info};
 use tokio::net::TcpListener;
 
 pub struct ServerConfig<'a> {
@@ -8,9 +8,11 @@ pub struct ServerConfig<'a> {
 }
 
 pub async fn run(config: &ServerConfig<'_>) -> Result<()> {
-    let _amqp = amqp::connect(config.amqp_connection_string)?;
+    let amqp = amqp::connect(config.amqp_connection_string)?;
+    info!("connected to amqp server");
+
     let listener = TcpListener::bind(config.address).await?;
-    info!("server running on {}", config.address);
+    info!("listening on {}", config.address);
 
     loop {
         match listener.accept().await {
