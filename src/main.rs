@@ -8,7 +8,5 @@ async fn main() {
         amqp_connection_string: "amqp://guest:guest@localhost:5672",
     };
 
-    hub::run(&hub_config)
-        .await
-        .expect("failed to run hub");
+    hub::run(&hub_config).await.expect("failed to run hub");
 }
