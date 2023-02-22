@@ -2,12 +2,12 @@ use anyhow::Result;
 use log::{debug, error, info};
 use tokio::net::TcpListener;
 
-pub struct ServerConfig<'a> {
+pub struct HubConfig<'a> {
     pub address: &'a str,
     pub amqp_connection_string: &'a str,
 }
 
-pub async fn run(config: &ServerConfig<'_>) -> Result<()> {
+pub async fn run(config: &HubConfig<'_>) -> Result<()> {
     let publisher = amqp::connect_publisher(config.amqp_connection_string)?;
     info!("connected amqp publisher");
     drop(publisher);

@@ -7,12 +7,12 @@ edition = "2021"
 
 [dependencies]
 env_logger = "0.10.0"
-server = { path = "crates/server", package = "server" }
+hub = { path = "crates/hub", package = "hub" }
 tokio = { version = "1.25.0", features = ["full"] }
 
 [workspace]
 members = [
 	"crates/protocol",
-	"crates/server",
+	"crates/hub",
 	"crates/amqp",
 ]

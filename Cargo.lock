@@ -335,6 +335,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fed44880c466736ef9a5c5b5facefb5ed0785676d0c02d612db14e54f0d84286"
 
 [[package]]
+name = "hub"
+version = "0.1.0"
+dependencies = [
+ "amqp",
+ "anyhow",
+ "log",
+ "tokio",
+]
+
+[[package]]
 name = "humantime"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -829,16 +839,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "server"
-version = "0.1.0"
-dependencies = [
- "amqp",
- "anyhow",
- "log",
- "tokio",
-]
-
-[[package]]
 name = "sha2"
 version = "0.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -910,7 +910,7 @@ name = "spark"
 version = "0.1.0"
 dependencies = [
  "env_logger",
- "server",
+ "hub",
  "tokio",
 ]
 
