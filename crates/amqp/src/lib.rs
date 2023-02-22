@@ -8,17 +8,17 @@ use anyhow::Result;
 use log::{error, warn};
 
 #[derive(Clone)]
-pub struct AmqpClient {
+pub struct AmqpPublisher {
     tx: Sender<(String, Vec<u8>)>,
 }
 
-impl AmqpClient {
+impl AmqpPublisher {
     pub fn publish(self, data: Vec<u8>, queue: String) -> Result<()> {
         Ok(self.tx.send((queue, data))?)
     }
 }
 
-pub fn connect(url: &str) -> Result<AmqpClient> {
+pub fn connect_publisher(url: &str) -> Result<AmqpPublisher> {
     let (tx, rx) = channel::<(String, Vec<u8>)>();
     let mut connection = Connection::insecure_open(url)?;
     let channel = connection.open_channel(None)?;
@@ -43,10 +43,10 @@ pub fn connect(url: &str) -> Result<AmqpClient> {
         }
 
         match connection.close() {
-            Ok(_) => warn!("closed amqp connection"),
-            Err(_) => error!("failed to close amqp connection"),
+            Ok(_) => warn!("closed amqp publisher connection"),
+            Err(_) => error!("failed to close amqp publisher connection"),
         }
     });
 
-    Ok(AmqpClient { tx })
+    Ok(AmqpPublisher { tx })
 }

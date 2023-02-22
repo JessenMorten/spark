@@ -8,8 +8,9 @@ pub struct ServerConfig<'a> {
 }
 
 pub async fn run(config: &ServerConfig<'_>) -> Result<()> {
-    let amqp = amqp::connect(config.amqp_connection_string)?;
-    info!("connected to amqp server");
+    let publisher = amqp::connect_publisher(config.amqp_connection_string)?;
+    info!("connected amqp publisher");
+    drop(publisher);
 
     let listener = TcpListener::bind(config.address).await?;
     info!("listening on {}", config.address);
