@@ -1,7 +1,7 @@
 use amqp::{consumer, publisher};
 use anyhow::Result;
 use log::{error, info};
-use tokio::net::TcpListener;
+use tokio::net::{TcpListener, TcpStream};
 
 pub struct HubConfig<'a> {
     pub address: &'a str,
@@ -20,16 +20,20 @@ pub async fn run(config: &HubConfig<'_>) -> Result<()> {
 
     loop {
         match listener.accept().await {
-            Ok((_stream, _)) => {
-                info!("accepted new socket");
-                // TODO: spawn new action that executes a private function
-                // which will read/write using the stream. Pass ownership
-                // of the stream to the private function, since we don't need
-                // it anymore.
+            Ok((stream, _)) => {
+                tokio::spawn(async move {
+                    handle_stream(stream).await;
+                });
             }
             Err(err) => {
                 error!("failed to accept: {}", err);
             }
         }
     }
+}
+
+async fn handle_stream(stream: TcpStream) {
+    let addr = stream.peer_addr().expect("failed to get peer address");
+    info!("{} connected", addr);
+    info!("{} disconnected", addr);
 }
