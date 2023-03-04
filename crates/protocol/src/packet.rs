@@ -36,7 +36,7 @@ impl Packet<'_> {
     }
 
     pub fn serialize(self) -> Vec<u8> {
-        panic!(); // TODO: implement
+        todo!();
     }
 }
 

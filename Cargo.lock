@@ -341,7 +341,9 @@ dependencies = [
  "amqp",
  "anyhow",
  "log",
+ "protocol",
  "tokio",
+ "uuid",
 ]
 
 [[package]]
