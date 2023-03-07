@@ -1,4 +1,4 @@
-use std::{time::Duration, rc::Rc};
+use std::{rc::Rc, time::Duration};
 
 use amqp::{
     consumer,
@@ -8,8 +8,12 @@ use anyhow::Result;
 use log::{error, info, warn};
 use protocol::packet::Packet;
 use tokio::{
-    io,
-    net::{TcpListener, TcpStream, tcp::{OwnedReadHalf, OwnedWriteHalf}}, time::timeout, join,
+    io, join,
+    net::{
+        tcp::{OwnedReadHalf, OwnedWriteHalf},
+        TcpListener, TcpStream,
+    },
+    time::timeout,
 };
 use uuid::Uuid;
 
@@ -48,9 +52,7 @@ async fn handle_stream(stream: TcpStream, publisher: AmqpPublisher) {
     info!("{} connected", id);
     let (reader, writer) = stream.into_split();
 
-    join!(
-        handle_read(id, &reader, publisher),
-    );
+    join!(handle_read(id, &reader, publisher),);
 
     info!("{} dropping", id);
 }
@@ -87,11 +89,11 @@ async fn handle_read(id: Uuid, reader: &OwnedReadHalf, publisher: AmqpPublisher)
                         }
 
                         info!("{} published msg: {:?}", id, msg);
-                    },
+                    }
                     Err(err) => {
                         error!("{} sent corrupt data: {}", id, err);
                         break;
-                    },
+                    }
                 }
             }
             Err(ref err) if err.kind() == io::ErrorKind::WouldBlock => {
@@ -105,4 +107,3 @@ async fn handle_read(id: Uuid, reader: &OwnedReadHalf, publisher: AmqpPublisher)
         }
     }
 }
-

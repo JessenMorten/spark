@@ -148,10 +148,14 @@ mod tests {
 
     #[test]
     fn serialize() {
-        let id = [ 164, 221, 86, 77, 9, 34, 79, 96, 179, 2, 152, 246, 117, 254, 222, 146 ];
+        let id = [
+            164, 221, 86, 77, 9, 34, 79, 96, 179, 2, 152, 246, 117, 254, 222, 146,
+        ];
         let id = Uuid::from_bytes(id);
-        let raw: Vec<u8> = vec![1,2,3];
-        let expected = vec![164, 221, 86, 77, 9, 34, 79, 96, 179, 2, 152, 246, 117, 254, 222, 146, 1, 2, 3];
+        let raw: Vec<u8> = vec![1, 2, 3];
+        let expected = vec![
+            164, 221, 86, 77, 9, 34, 79, 96, 179, 2, 152, 246, 117, 254, 222, 146, 1, 2, 3,
+        ];
 
         let packet = Packet::from_raw(id, &raw).expect("failed to create packet");
         let serialized = packet.serialize();
@@ -161,8 +165,12 @@ mod tests {
 
     #[test]
     fn deserialize() {
-        let buf = vec![164, 221, 86, 77, 9, 34, 79, 96, 179, 2, 152, 246, 117, 254, 222, 146, 1, 2, 3];
-        let expected_id = Uuid::from_bytes([164, 221, 86, 77, 9, 34, 79, 96, 179, 2, 152, 246, 117, 254, 222, 146]);
+        let buf = vec![
+            164, 221, 86, 77, 9, 34, 79, 96, 179, 2, 152, 246, 117, 254, 222, 146, 1, 2, 3,
+        ];
+        let expected_id = Uuid::from_bytes([
+            164, 221, 86, 77, 9, 34, 79, 96, 179, 2, 152, 246, 117, 254, 222, 146,
+        ]);
 
         let deserialized = Packet::deserialize(&buf).expect("failed to deserialize");
 
