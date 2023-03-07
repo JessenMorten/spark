@@ -1,4 +1,4 @@
-use std::{rc::Rc, time::Duration};
+use std::time::Duration;
 
 use amqp::{
     consumer,
@@ -10,7 +10,7 @@ use protocol::packet::Packet;
 use tokio::{
     io, join,
     net::{
-        tcp::{OwnedReadHalf, OwnedWriteHalf},
+        tcp::OwnedReadHalf,
         TcpListener, TcpStream,
     },
     time::timeout,
@@ -50,7 +50,7 @@ pub async fn run(config: &HubConfig<'_>) -> Result<()> {
 async fn handle_stream(stream: TcpStream, publisher: AmqpPublisher) {
     let id = Uuid::new_v4();
     info!("{} connected", id);
-    let (reader, writer) = stream.into_split();
+    let (reader, _writer) = stream.into_split();
 
     join!(handle_read(id, &reader, publisher),);
 
@@ -77,7 +77,7 @@ async fn handle_read(id: Uuid, reader: &OwnedReadHalf, publisher: AmqpPublisher)
                 warn!("{} client disconnected", id);
                 break;
             }
-            Ok(n) => {
+            Ok(_n) => {
                 match Packet::from_raw(id, &buf) {
                     Ok(packet) => {
                         let msg = packet.serialize();
