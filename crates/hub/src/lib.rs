@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{time::Duration, rc::Rc};
 
 use amqp::{
     consumer,
@@ -9,7 +9,7 @@ use log::{error, info, warn};
 use protocol::packet::Packet;
 use tokio::{
     io,
-    net::{TcpListener, TcpStream}, time::timeout,
+    net::{TcpListener, TcpStream, tcp::{OwnedReadHalf, OwnedWriteHalf}}, time::timeout, join,
 };
 use uuid::Uuid;
 
@@ -46,11 +46,20 @@ pub async fn run(config: &HubConfig<'_>) -> Result<()> {
 async fn handle_stream(stream: TcpStream, publisher: AmqpPublisher) {
     let id = Uuid::new_v4();
     info!("{} connected", id);
+    let (reader, writer) = stream.into_split();
 
+    join!(
+        handle_read(id, &reader, publisher),
+    );
+
+    info!("{} dropping", id);
+}
+
+async fn handle_read(id: Uuid, reader: &OwnedReadHalf, publisher: AmqpPublisher) {
     loop {
         // wait for the socket to be readable
         let duration = Duration::from_secs(5);
-        let readable = stream.readable();
+        let readable = reader.readable();
         let readable = timeout(duration, readable);
 
         if let Err(err) = readable.await {
@@ -61,14 +70,29 @@ async fn handle_stream(stream: TcpStream, publisher: AmqpPublisher) {
         let mut buf = Vec::with_capacity(4096);
 
         // TODO: use iothub read implementation
-        match stream.try_read_buf(&mut buf) {
+        match reader.try_read_buf(&mut buf) {
             Ok(0) => {
                 warn!("{} client disconnected", id);
                 break;
             }
             Ok(n) => {
-                let packet = Packet::parse(id, &buf).expect("failed to parse packet");
-                publisher.publish(packet.serialize(), "hej").expect("failed to publish packet");
+                match Packet::from_raw(id, &buf) {
+                    Ok(packet) => {
+                        let msg = packet.serialize();
+
+                        // TODO: remove .clone()
+                        if let Err(err) = publisher.publish(msg.clone(), "hej") {
+                            error!("{} failed to publish: {}", id, err);
+                            break;
+                        }
+
+                        info!("{} published msg: {:?}", id, msg);
+                    },
+                    Err(err) => {
+                        error!("{} sent corrupt data: {}", id, err);
+                        break;
+                    },
+                }
             }
             Err(ref err) if err.kind() == io::ErrorKind::WouldBlock => {
                 warn!("{} would block", id);
@@ -80,6 +104,5 @@ async fn handle_stream(stream: TcpStream, publisher: AmqpPublisher) {
             }
         }
     }
-
-    info!("dropping {}", id);
 }
+
